@@ -1,27 +1,36 @@
 #include <Arduino.h>
 
-int outputPin;
-unsigned long pulse, deltaT;
+int currentOutput = LOW;
+int lastOutput = LOW;
+
+unsigned long pulse = 0;
+unsigned long deltaT = 0;
+
+const float kmIn = (100.0*1000.0)/2.54;
+const float hrMs = 1000.0*60.0*60.0;
+const float inMs = kmIn/hrMs;
+
 const int diamWheel = 22;
-const float kmIn = (100UL*1000)/2.54, hrMs = 1000UL*60*60, inMs = kmIn/hrMs, perimeter = diamWheel*PI;
+const float perimeter = diamWheel*PI;
 
 void setup() {
   pinMode(2, INPUT);
   Serial.begin(9600);
-  Serial.print("In/ms: " + String(inMs) + "\nKilometers to inches: " + String(kmIn) + "\nHours to milliseconds: " + String(hrMs));
+  Serial.println("\nIn/ms: " + String(inMs) + "\nKilometers to inches: " + String(kmIn) + "\nHours to milliseconds: " + String(hrMs));
 }
 
 void loop() {
-  if (outputPin == LOW && outputPin != digitalRead(2)) {
-    deltaT = millis() - pulse;
-    pulse = millis();
+  currentOutput = digitalRead(2);
 
-    if (deltaT == 0) {
-      return;
-    } else {
-      Serial.println((1.0/deltaT)*inMs*perimeter, 10);
+  if (lastOutput == HIGH && currentOutput == LOW) {
+    deltaT = millis() - pulse;
+
+    if (deltaT > 30) {
+      pulse = millis();
+      float speed = (perimeter / deltaT) * (hrMs / kmIn);
+      Serial.println(String(speed, 2) + "km/h");
     }
   }
-  
-  outputPin = digitalRead(2);
+
+  lastOutput = currentOutput;
 }
