@@ -11,6 +11,7 @@ const float hrMs = 1000.0*60.0*60.0;
 const float inMs = kmIn/hrMs;
 
 const int diamWheel = 22;
+const int magnet = 4;
 const float perimeter = diamWheel*PI;
 
 void setup() {
@@ -25,9 +26,10 @@ void loop() {
   if (lastOutput == HIGH && currentOutput == LOW) {
     deltaT = millis() - pulse;
 
-    if (deltaT > 30) {
+    if (deltaT > 10) {
       pulse = millis();
-      float speed = (perimeter / deltaT) * (hrMs / kmIn);
+      float revolutionT = deltaT * magnet;
+      float speed = (perimeter / revolutionT) * (hrMs / kmIn);
       Serial.println(String(speed, 2) + "km/h");
     }
   }
